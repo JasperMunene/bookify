@@ -32,7 +32,7 @@ db.connect()
 app.get('/', (req, res) => {
     res.send('Hello world!')
 })
-
+//Route to upload a book to the database
 app.post('/upload-book', async (req, res) => {
     try {
         const { booktitle, authorname, imageURL, category, bookdescription, bookpdfURL } = req.body;
@@ -44,6 +44,22 @@ app.post('/upload-book', async (req, res) => {
         res.status(200).json({ message: 'Book uploaded successfully!' });
     } catch (error) {
         console.error('Error uploading book:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/all-books', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM books');
+        const books = result.rows;
+        const count = books.length;
+
+        res.status(200).json({
+            books,
+            count,
+        });
+    } catch (error) {
+        console.error('Error fetching all books:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
