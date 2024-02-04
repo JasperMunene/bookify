@@ -33,6 +33,21 @@ app.get('/', (req, res) => {
     res.send('Hello world!')
 })
 
+app.post('/upload-book', async (req, res) => {
+    try {
+        const { booktitle, authorname, imageURL, category, bookdescription, bookpdfURL } = req.body;
+
+        await db.query('INSERT INTO books (booktitle, authorname, imageURL, category, bookdescription, bookpdfURL) VALUES ($1, $2, $3, $4, $5, $6)', [
+            booktitle, authorname, imageURL, category, bookdescription, bookpdfURL
+        ]);
+
+        res.status(200).json({ message: 'Book uploaded successfully!' });
+    } catch (error) {
+        console.error('Error uploading book:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 app.listen(port, () => {
     console.log(`Server running on PORT: ${port}`)
