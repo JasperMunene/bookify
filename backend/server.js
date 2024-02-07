@@ -128,6 +128,25 @@ app.put("/update-book/:id", async (req, res) => {
     }
 });
 
+app.delete('/delete/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await db.query('DELETE FROM books WHERE id = $1 RETURNING *', [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Book not found' });
+        }
+
+        res.status(200).json({
+            message: 'Book deleted successfully',
+            data: result.rows[0],
+        });
+    } catch (error) {
+        console.error('Error deleting book:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 
 app.listen(port, () => {
