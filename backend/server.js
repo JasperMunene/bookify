@@ -32,6 +32,24 @@ db.connect()
 app.get('/', (req, res) => {
     res.send('Hello world!')
 })
+
+//Route to get all books in the database
+app.get('/all-books', async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM books');
+        const books = result.rows;
+        const count = books.length;
+
+        res.status(200).json({
+            books,
+            count,
+        });
+    } catch (error) {
+        console.error('Error fetching all books:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 //Route to upload a book to the database
 app.post('/upload-book', async (req, res) => {
     try {
@@ -48,21 +66,68 @@ app.post('/upload-book', async (req, res) => {
     }
 });
 
-app.get('/all-books', async (req, res) => {
+//ROUTE FOR UPDATING A BOOK
+app.put("/update-book/:id", async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM books');
-        const books = result.rows;
-        const count = books.length;
+        const { id } = req.params;
+        const { booktitle, authorname, imageURL, category, bookdescription, bookpdfURL } = req.body;
 
-        res.status(200).json({
-            books,
-            count,
-        });
+        if (!booktitle || !authorname || !imageURL || !category || !bookdescription || !bookpdfURL) {
+            return res.status(400).send("Please provide at least one field to update.");
+        }
+
+        let updateFields = '';
+        const values = [];
+
+        if (booktitle) {
+            updateFields += 'booktitle = $1, ';
+            values.push(booktitle);
+        }
+
+        if (authorname) {
+            updateFields += 'authorname = $2, ';
+            values.push(authorname);
+        }
+
+        if (imageURL) {
+            updateFields += 'imageURL = $3, ';
+            values.push(imageURL);
+        }
+
+        if (category) {
+            updateFields += 'category = $4, ';
+            values.push(category);
+        }
+
+        if (bookdescription) {
+            updateFields += 'bookdescription = $5, ';
+            values.push(bookdescription);
+        }
+
+        if (bookpdfURL) {
+            updateFields += 'bookpdfURL = $6, ';
+            values.push(bookpdfURL);
+        }
+
+        // Remove the trailing comma and space
+        updateFields = updateFields.slice(0, -2);
+
+        const result = await db.query(
+            `UPDATE books SET ${updateFields} WHERE id = $${values.length + 1}`,
+            [...values, id]
+        );
+
+        if (result.rowCount === 1) {
+            res.status(200).json({ message: 'Book updated successfully!' });
+        } else {
+            res.status(404).json({ error: 'Book not found' });
+        }
     } catch (error) {
-        console.error('Error fetching all books:', error);
+        console.error('Error updating book:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 
 app.listen(port, () => {
