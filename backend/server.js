@@ -17,7 +17,7 @@ const db = new pg.Client({
     host: process.env.DB_HOST,
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
-    port: parseInt(process.env.DB_PORT) || 5432,
+    port: parseInt(process.env.DB_PORT, 10) || 5432,
 });
 
 db.connect()
@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 })
 
 //Route to get all books in the database
-app.get('/all-books', async (req, res) => {
+app.get('/books', async (req, res) => {
     try {
         const result = await db.query('SELECT * FROM books');
         const books = result.rows;
@@ -50,6 +50,35 @@ app.get('/all-books', async (req, res) => {
     }
 });
 
+// Route to filter books by category
+app.get('/books/filter', async (req, res) => {
+    try {
+        let { category } = req.query;
+
+        if (!category) {
+            return res.status(400).json({ error: 'Please provide a category parameter in the query string' });
+        }
+
+        
+        category = category.toLowerCase();
+
+        const result = await db.query('SELECT * FROM books WHERE LOWER(category) = $1', [category]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'No books found for the specified category' });
+        }
+
+        res.status(200).json({
+            message: 'Books filtered by category successfully',
+            books: result.rows,
+        });
+    } catch (error) {
+        console.error('Error filtering books by category:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 //Route to upload a book to the database
 app.post('/upload-book', async (req, res) => {
     try {
@@ -59,7 +88,7 @@ app.post('/upload-book', async (req, res) => {
             booktitle, authorname, imageURL, category, bookdescription, bookpdfURL
         ]);
 
-        res.status(200).json({ message: 'Book uploaded successfully!' });
+        res.status(201).json({ message: 'Book uploaded successfully!' }); 
     } catch (error) {
         console.error('Error uploading book:', error);
         res.status(500).json({ error: 'Internal Server Error' });
