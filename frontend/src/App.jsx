@@ -1,13 +1,16 @@
 import { useState } from 'react'
+import { Outlet } from 'react-router-dom'
+import Navbar from './components/Navbar'
 
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <h1 className="text-3xl font-bold underline text-sky-700">
-    Hello world!
-  </h1>
+    <>
+      <Navbar />
+      <Outlet />
+    </>
   )
 }
 
