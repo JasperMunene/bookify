@@ -1,12 +1,18 @@
-import React from 'react'
+import React from 'react';
 import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import './index.css'
-import { RouterProvider } from 'react-router-dom'
-import router from '../src/routers/router.jsx'
+import { BrowserRouter } from 'react-router-dom';
+import App from './App.jsx';
+import './index.css';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import '@fortawesome/fontawesome-svg-core/styles.css';
+
+library.add(fas);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-   <RouterProvider router={router} />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>,
-)
+);
